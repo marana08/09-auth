@@ -1,12 +1,14 @@
 'use client';
 
-import { register } from '@/lib/api/clientApi';
+import { getMe, register } from '@/lib/api/clientApi';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import css from './page.module.css';
+import { useLogin } from '@/lib/store/authStore';
 
 export default function SignUpPage() {
     const router = useRouter();
+    const setUser = useLogin(state => state.setUser);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -21,9 +23,18 @@ export default function SignUpPage() {
 
         try {
             await register({ email, password });
+            const user = await getMe();
+            setUser(user);
             router.push('/profile');
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Registration failed');
+        } catch (err: unknown) {
+            if (typeof err === 'object' && err !== null && 'response' in err) {
+                const axiosError = err as {
+                    response?: { data?: { message?: string } };
+                };
+                setError(axiosError.response?.data?.message || 'Registration failed');
+            } else {
+                setError('Registration failed');
+            }
         } finally {
             setIsLoading(false);
         }

@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { nextServer } from './api';
+import type { AxiosResponse } from 'axios';
 
 import type { User } from '@/types/user';
 import { type Note, type FetchTagNote } from '@/types/note';
@@ -13,24 +14,26 @@ interface Answer {
 
 async function getCookieHeader(): Promise<string> {
     const cookieStore = await cookies();
+
     return cookieStore
         .getAll()
         .map(({ name, value }) => `${name}=${value}`)
         .join('; ');
 }
 
-export const checkServerSession = async () => {
-    // Дістаємо поточні cookie
-    const cookieStore = await cookies();
+// Session 
+
+export async function checkSession(): Promise<AxiosResponse> {
     const res = await nextServer.get('/auth/session', {
         headers: {
-            // передаємо кукі далі
-            Cookie: cookieStore.toString(),
+            Cookie: await getCookieHeader(),
         },
     });
-    // Повертаємо повний респонс, щоб proxy мав доступ до нових cookie
+
+    // Повертаємо повний AxiosResponse,
+    // щоб middleware мав доступ до headers (set-cookie)
     return res;
-};
+}
 
 // Notes
 
@@ -44,8 +47,13 @@ export async function fetchNotes(
         perPage: 12,
     };
 
-    if (tag !== 'all') params.tag = tag;
-    if (search) params.search = search;
+    if (tag !== 'all') {
+        params.tag = tag;
+    }
+
+    if (search) {
+        params.search = search;
+    }
 
     const res = await nextServer.get<Answer>('/notes', {
         params,
@@ -71,18 +79,6 @@ export async function fetchNoteById(id: string): Promise<Note> {
 
 export async function getMe(): Promise<User> {
     const res = await nextServer.get<User>('/users/me', {
-        headers: {
-            Cookie: await getCookieHeader(),
-        },
-    });
-
-    return res.data;
-}
-
-// Auth
-
-export async function checkSession() {
-    const res = await nextServer.get('/auth/session', {
         headers: {
             Cookie: await getCookieHeader(),
         },

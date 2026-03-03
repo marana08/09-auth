@@ -4,12 +4,13 @@ import {
   dehydrate,
 } from '@tanstack/react-query';
 
-import { FetchTagNote } from '@/types/note';
+import type { Metadata } from 'next';
+import type { FetchTagNote } from '@/types/note';
+
 import NotesClient from './Notes.client';
+import { fetchNotes } from '@/lib/api/serverApi';
 
 import css from './page.module.css';
-import { Metadata } from 'next';
-import { fetchNotes } from '@/lib/api/clientApi';
 
 interface NotesProps {
   params: Promise<{ slug: string[] }>;
@@ -23,9 +24,10 @@ export async function generateMetadata({
   params,
 }: MetadataProps): Promise<Metadata> {
   const { slug } = await params;
-  const tag = slug[0] === 'all' ? 'all notes' : slug[0];
-  const tagUrl = slug[0] === 'all' ? undefined : slug[0];
-  const formattedTag = tag.charAt(0).toUpperCase() + tag.slice(1);
+
+  const rawTag = slug[0];
+  const tagLabel = rawTag === 'all' ? 'all notes' : rawTag;
+  const formattedTag = tagLabel.charAt(0).toUpperCase() + tagLabel.slice(1);
 
   return {
     title: `${formattedTag} Notes`,
