@@ -34,7 +34,7 @@ export async function generateMetadata({
       type: 'website',
       title: `${formattedTag} Notes`,
       description: `Page for ${formattedTag.toLowerCase()} tag`,
-      url: 'https://08-zustand-weld-eight.vercel.app',
+      url: 'https://09-auth-snowy-six.vercel.app',
       images: [
         {
           url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     description: 'Manage your personal profile in NoteHub.',
     openGraph: {
         type: 'website',
-        url: '',
+        url: 'https://09-auth-snowy-six.vercel.app/profile',
         title: 'Profile',
         description: 'Access and manage your NoteHub profile.',
         images: [
