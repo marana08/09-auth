@@ -5,11 +5,11 @@ import {
 } from '@tanstack/react-query';
 
 import { FetchTagNote } from '@/types/note';
-import { fetchFilterNotes } from '@/lib/api';
 import NotesClient from './Notes.client';
 
 import css from './page.module.css';
 import { Metadata } from 'next';
+import { fetchNotes } from '@/lib/api/clientApi';
 
 interface NotesProps {
   params: Promise<{ slug: string[] }>;
@@ -55,7 +55,7 @@ export default async function Notes({ params }: NotesProps) {
 
   await queryClient.prefetchQuery({
     queryKey: ['notes', tag, 1, ''],
-    queryFn: () => fetchFilterNotes(tag, 1, ''),
+    queryFn: () => fetchNotes(tag, 1, ''),
   });
 
   return (

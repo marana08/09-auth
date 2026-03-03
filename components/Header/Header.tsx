@@ -1,12 +1,19 @@
+'use client';
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import css from './Header.module.css';
+import AuthNavigation from '../AuthNavigation/AuthNavigation';
 
 export default function Header() {
+    const router = useRouter();
+
     return (
         <header className={css.header}>
             <Link href="/" aria-label="Home">
                 NoteHub
             </Link>
+
             <nav aria-label="Main Navigation">
                 <ul className={css.navigation}>
                     <li>
@@ -14,11 +21,15 @@ export default function Header() {
                             Home
                         </Link>
                     </li>
+
                     <li>
                         <Link href="/notes/filter/all" aria-label="Filter">
                             Notes
                         </Link>
                     </li>
+
+                    {/* Динамічна авторизаційна навігація */}
+                    <AuthNavigation />
                 </ul>
             </nav>
         </header>
