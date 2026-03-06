@@ -1,44 +1,36 @@
-import { deleteNote } from '@/lib/api/clientApi';
-import css from './NoteList.module.css';
-
-import { type Note } from '@/types/note';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import Link from 'next/link';
+import css from "./NoteList.module.css";
+import { Note } from "../../types/note";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
+import { deleteNote } from "@/lib/api/clientApi";
 
 interface NoteListProps {
-  noteList: Note[];
+  notes: Note[];
 }
 
-export default function NoteList({
-  noteList
-}: NoteListProps) {
+export default function NoteList({ notes }: NoteListProps) {
   const queryClient = useQueryClient();
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const res = await deleteNote(id);
-      return res;
-    },
+    mutationFn: (id: string) => deleteNote(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
     },
   });
 
+  const handleDeleteNote = (id: string) => {
+    deleteMutation.mutate(id);
+  };
   return (
     <ul className={css.list}>
-      {noteList.map(note => (
-        <li key={note.id} className={css.listItem}>
-          <h2 className={css.title}>{note.title}</h2>
-          <p className={css.content}>{note.content}</p>
+      {notes.map(({ title, content, tag, id }) => (
+        <li key={id} className={css.listItem}>
+          <h2 className={css.title}>{title}</h2>
+          <p className={css.content}>{content}</p>
           <div className={css.footer}>
-            <span className={css.tag}>{note.tag}</span>
-            <Link className={css.link} href={`/notes/${note.id}`}>
-              View details
-            </Link>
-            <button
-              onClick={() => deleteMutation.mutate(note.id)}
-              className={css.button}
-            >
+            <span className={css.tag}>{tag}</span>
+            <Link href={`/notes/${id}`}>View details</Link>
+            <button className={css.button} onClick={() => handleDeleteNote(id)}>
               Delete
             </button>
           </div>

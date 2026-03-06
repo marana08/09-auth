@@ -1,97 +1,74 @@
 'use client';
 
-import css from './NoteForm.module.css';
-
-import { useId } from 'react';
 import { useRouter } from 'next/navigation';
+import css from './NoteForm.module.css';
+import { useId } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { FormValues, NoteTag } from '@/types/note';
+import { useNoteStore } from '@/lib/store/noteStore';
 import { createNote } from '@/lib/api/clientApi';
-import { type NewNote } from '@/types/note';
-import { useDraft } from '@/lib/store/noteStore';
-
-type noteTag = 'Todo' | 'Work' | 'Personal' | 'Meeting' | 'Shopping';
 
 export default function NoteForm() {
-    const id = useId();
+    const fieldId = useId();
     const router = useRouter();
     const queryClient = useQueryClient();
 
-    const { draft, setDraft, clearDraft } = useDraft();
+    const { draft, setDraft, clearDraft } = useNoteStore();
 
     const createMutation = useMutation({
-        mutationFn: async (data: NewNote) => {
-            return await createNote(data);
-        },
+        mutationFn: (value: FormValues) => createNote(value),
         onSuccess: () => {
+            clearDraft();
             queryClient.invalidateQueries({ queryKey: ['notes'] });
-            clearDraft(); // очищаємо тільки після успішного створення
             router.back();
         },
     });
 
-    function handleChange(
-        ev: React.ChangeEvent<
-            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-        >
-    ) {
-        const updatedDraft: NewNote = {
-            ...draft,
-            [ev.target.name]: ev.target.value,
-        };
-
-        setDraft(updatedDraft);
-    }
-
-    function handleSubmit(formData: FormData) {
-        const newNote: NewNote = {
+    const handleFormSubmit = (formData: FormData) => {
+        const note: FormValues = {
             title: formData.get('title') as string,
             content: formData.get('content') as string,
-            tag: formData.get('tag') as noteTag,
+            tag: formData.get('tag') as FormValues['tag'],
         };
 
-        createMutation.mutate(newNote);
-    }
-
-    function cancelForm() {
-        // draft НЕ очищається
-        router.back();
-    }
+        createMutation.mutate(note);
+    };
 
     return (
-        <form className={css.form} action={handleSubmit}>
+        <form className={css.form} action={handleFormSubmit}>
             <div className={css.formGroup}>
-                <label htmlFor={`${id}-title`}>Title</label>
+                <label htmlFor={`${fieldId}-title`}>Title</label>
                 <input
-                    type="text"
-                    id={`${id}-title`}
+                    id={`${fieldId}-title`}
                     name="title"
+                    type="text"
                     className={css.input}
+                    value={draft.title}
+                    onChange={e => setDraft({ ...draft, title: e.target.value })}
                     required
-                    onChange={handleChange}
-                    defaultValue={draft.title}
                 />
             </div>
 
             <div className={css.formGroup}>
-                <label htmlFor={`${id}-content`}>Content</label>
+                <label htmlFor={`${fieldId}-content`}>Content</label>
                 <textarea
-                    id={`${id}-content`}
+                    id={`${fieldId}-content`}
                     name="content"
                     className={css.textarea}
                     rows={8}
-                    onChange={handleChange}
-                    defaultValue={draft.content}
+                    value={draft.content}
+                    onChange={e => setDraft({ ...draft, content: e.target.value })}
                 />
             </div>
 
             <div className={css.formGroup}>
-                <label htmlFor={`${id}-tag`}>Tag</label>
+                <label htmlFor={`${fieldId}-tag`}>Tag</label>
                 <select
-                    id={`${id}-tag`}
+                    id={`${fieldId}-tag`}
                     name="tag"
                     className={css.select}
-                    onChange={handleChange}
-                    defaultValue={draft.tag}
+                    value={draft.tag}
+                    onChange={e => setDraft({ ...draft, tag: e.target.value as NoteTag })}
                 >
                     <option value="Todo">Todo</option>
                     <option value="Work">Work</option>
@@ -102,17 +79,13 @@ export default function NoteForm() {
             </div>
 
             <div className={css.actions}>
-                <button
-                    type="button"
-                    onClick={cancelForm}
-                    className={css.cancelButton}
-                >
+                <button type="button" className={css.cancelButton} disabled={false}>
                     Cancel
                 </button>
-
                 <button
                     type="submit"
                     className={css.submitButton}
+                    disabled={createMutation.isPending}
                 >
                     Create note
                 </button>

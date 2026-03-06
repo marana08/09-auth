@@ -3,7 +3,3 @@ export interface User {
     username: string;
     avatar: string;
 }
-export interface UserReg {
-    email: string;
-    password: string;
-}

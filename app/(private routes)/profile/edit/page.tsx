@@ -1,62 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import css from "./EditProfilePage.module.css";
-
-import { useLogin } from "@/lib/store/authStore";
+import { useAuthStore } from "@/lib/store/authStore";
+import { useRouter } from "next/navigation";
 import { updateMe } from "@/lib/api/clientApi";
 
-export default function EditProfilePage() {
-    const user = useLogin((state) => state.user);
-    const setUser = useLogin((state) => state.setUser);
+export default function Edit() {
+    const user = useAuthStore((state) => state.user);
+    const setUser = useAuthStore((state) => state.setUser);
     const router = useRouter();
 
-    const [username, setUsername] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    // Синхронізація локального стану з користувачем
-    useEffect(() => {
-        if (user?.username) {
-            setUsername(user.username);
-        }
-    }, [user]);
-
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-
+    const handleUpdate = async (formData: FormData) => {
         if (!user) return;
 
-        const trimmedUsername = username.trim();
-
-        if (!trimmedUsername) {
-            setError("Username cannot be empty");
-            return;
-        }
-
-        if (trimmedUsername === user.username) {
-            router.push("/profile");
-            return;
-        }
+        const username = formData.get("username") as string;
 
         try {
-            setIsSubmitting(true);
-            setError(null);
-
             const updatedUser = await updateMe({
-                username: trimmedUsername,
-                email: user.email,
+                username,
             });
 
             setUser(updatedUser);
             router.push("/profile");
-        } catch (err) {
-            console.error("Update failed", err);
-            setError("Failed to update profile. Please try again.");
-        } finally {
-            setIsSubmitting(false);
+        } catch (error) {
+            console.error("Update failed", error);
         }
     };
 
@@ -64,56 +32,37 @@ export default function EditProfilePage() {
         router.push("/profile");
     };
 
-    if (!user) {
-        return null; 
-    }
-
     return (
         <main className={css.mainContent}>
             <div className={css.profileCard}>
                 <h1 className={css.formTitle}>Edit Profile</h1>
 
-                {user.avatar && (
-                    <Image
-                        src={user.avatar}
-                        alt="User Avatar"
-                        width={120}
-                        height={120}
-                        className={css.avatar}
-                    />
+                {user?.avatar && (
+                    <Image src={user.avatar} alt="User Avatar" width={120} height={120} />
                 )}
 
-                <form className={css.profileInfo} onSubmit={handleSubmit}>
+                <form className={css.profileInfo} action={handleUpdate}>
                     <div className={css.usernameWrapper}>
                         <label htmlFor="username">Username:</label>
                         <input
-                            id="username"
                             name="username"
+                            defaultValue={user?.username}
+                            id="username"
                             type="text"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
                             className={css.input}
                         />
                     </div>
 
-                    <p>Email: {user.email}</p>
-
-                    {error && <p className={css.error}>{error}</p>}
+                    <p>Email: {user?.email}</p>
 
                     <div className={css.actions}>
-                        <button
-                            type="submit"
-                            className={css.saveButton}
-                            disabled={isSubmitting}
-                        >
-                            {isSubmitting ? "Saving..." : "Save"}
+                        <button type="submit" className={css.saveButton}>
+                            Save
                         </button>
-
                         <button
                             type="button"
                             className={css.cancelButton}
                             onClick={handleCancel}
-                            disabled={isSubmitting}
                         >
                             Cancel
                         </button>

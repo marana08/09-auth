@@ -8,13 +8,13 @@ export const metadata: Metadata = {
         type: "website",
         title: 'Not found page',
         description: 'The page you are looking for does not exist',
-        url: 'https://08-zustand-weld-eight.vercel.app',
+        url: '',
         images: [
             {
                 url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
                 width: 1200,
                 height: 630,
-                alt: 'logo',
+                alt: '404 Page Not Found - NoteHub',
             },
         ],
     },

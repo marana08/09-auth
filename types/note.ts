@@ -1,5 +1,3 @@
-export type NoteTag = 'Work' | 'Personal' | 'Meeting' | 'Shopping' | 'Todo';
-
 export interface Note {
     id: string;
     title: string;
@@ -9,16 +7,10 @@ export interface Note {
     updatedAt: string;
 }
 
-export interface NewNote {
+export type NoteTag = "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
+
+export interface FormValues {
     title: string;
     content: string;
     tag: NoteTag;
 }
-
-export type FetchTagNote =
-    | 'Todo'
-    | 'Work'
-    | 'Personal'
-    | 'Meeting'
-    | 'Shopping'
-    | 'all';

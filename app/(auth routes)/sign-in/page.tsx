@@ -1,62 +1,44 @@
 'use client';
 
+import css from './SignInPage.module.css';
 import { useRouter } from 'next/navigation';
-import css from './page.module.css';
-import { useLogin } from '@/lib/store/authStore';
 import { useState } from 'react';
-import { UserReg } from '@/types/user';
-import { getMe, login } from '@/lib/api/clientApi';
-import { AxiosError } from 'axios';
-import Modal from '@/components/Modal/Modal';
+import { getMe, login, UserRegisterData } from '@/lib/api/clientApi';
+import { useAuthStore } from '@/lib/store/authStore';
+import { ApiError } from '@/lib/api/api';
 
-export default function Login() {
+export default function SignIn() {
     const router = useRouter();
-    const setUser = useLogin(state => state.setUser);
-    const [isModal, setIsModal] = useState(false);
-    const [mess, setMess] = useState('');
+    const [error, setError] = useState('');
+    const setUser = useAuthStore(state => state.setUser);
 
-    function closeModal() {
-        setIsModal(false);
-        router.push('/sign-in');
-    }
-
-    async function handleSubmit(fotmData: FormData) {
-        // очищаємо попередній стан
-        setMess('');
-        setIsModal(false);
-
-        const data: UserReg = {
-            email: fotmData.get('email') as string,
-            password: fotmData.get('password') as string,
-        };
+    const handleSubmit = async (formData: FormData) => {
         try {
-            // 1️⃣ логін (сервер встановлює cookie)
-            await login(data);
+            const email = formData.get('email') as string;
+            const password = formData.get('password') as string;
 
-            // 2️⃣ отримуємо поточного користувача
-            const user = await getMe();
+            const loginData: UserRegisterData = {
+                email,
+                password,
+            };
+            const res = await login(loginData);
 
-            // 3️⃣ зберігаємо у Zustand
-            setUser(user);
-
-            // 4️⃣ редірект
-            router.push('/profile');
-        } catch (error) {
-            if (error instanceof AxiosError) {
-                const message =
-                    error.response?.data?.response?.message ||
-                    error.response?.data?.message ||
-                    'Authentication failed';
-
-                if (message === 'Invalid credentials') {
-                    setIsModal(true);
-                }
-                setMess(message);
+            if (res) {
+                const user = await getMe();
+                setUser(user);
+                router.push('/profile');
             } else {
-                setMess('An unexpected error occurred. Please try again.');
+                setError('Invalid email or password');
             }
+        } catch (error) {
+            setError(
+                (error as ApiError).response?.data?.error ??
+                (error as ApiError).message ??
+                'Oops... some error'
+            );
         }
-    }
+    };
+
     return (
         <main className={css.mainContent}>
             <form className={css.form} action={handleSubmit}>
@@ -81,7 +63,6 @@ export default function Login() {
                         name="password"
                         className={css.input}
                         required
-                        minLength={6}
                     />
                 </div>
 
@@ -91,13 +72,7 @@ export default function Login() {
                     </button>
                 </div>
 
-                {mess && <p className={css.error}>{mess}</p>}
-
-                {isModal && (
-                    <Modal onClose={closeModal}>
-                        <p>Invalid credentials or user not found.</p>
-                    </Modal>
-                )}
+                <p className={css.error}>{error}</p>
             </form>
         </main>
     );
