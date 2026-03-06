@@ -30,7 +30,7 @@ export async function generateMetadata({
       type: 'website',
       title: `${formattedTag} Notes`,
       description: `Browse ${formattedTag.toLowerCase()} notes in NoteHub. Stay organized and manage your tasks efficiently.`,
-      url: `https://08-zustand-two-rosy.vercel.app/notes/filter/${tagUrl}`,
+      url: `08-zustand-weld-eight.vercel.app/notes/filter/${tagUrl}`,
       images: [
         {
           url: 'https://ac.goit.global/fullstack/react/notehub-og-meta.jpg',
