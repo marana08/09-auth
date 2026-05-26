@@ -1,5 +1,3 @@
-'use client';
-
 import Link from 'next/link';
 import css from './Header.module.css';
 import AuthNavigation from '../AuthNavigation/AuthNavigation';
@@ -10,19 +8,13 @@ export default function Header() {
             <Link href="/" aria-label="Home">
                 NoteHub
             </Link>
-
             <nav aria-label="Main Navigation">
                 <ul className={css.navigation}>
                     <li>
-                        <Link href="/" aria-label="Home">
-                            Home
-                        </Link>
+                        <Link href="/">Home</Link>
                     </li>
-
                     <li>
-                        <Link href={`/notes/filter/all`} aria-label="Filter">
-                            Notes
-                        </Link>
+                        <Link href={`/notes/filter/all`}>Notes</Link>
                     </li>
                     <AuthNavigation />
                 </ul>
